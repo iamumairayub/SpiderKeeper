@@ -1,6 +1,7 @@
 import datetime
 import os
 import tempfile
+import html
 
 import flask_restful
 import requests
@@ -482,9 +483,9 @@ def utility_processor():
     def readable_time(total_seconds):
         if not total_seconds:
             return '-'
-        if total_seconds < 60:
+        if total_seconds / 60 == 0:
             return '%s s' % total_seconds
-        if total_seconds < 3600:
+        if total_seconds / 3600 == 0:
             return '%s m' % int(total_seconds / 60)
         return '%s h %s m' % (int(total_seconds / 3600), int((total_seconds % 3600) / 60))
 
@@ -589,9 +590,19 @@ def job_stop(project_id, job_exec_id):
 @app.route("/project/<project_id>/jobexecs/<job_exec_id>/log")
 def job_log(project_id, job_exec_id):
     job_execution = JobExecution.query.filter_by(project_id=project_id, id=job_exec_id).first()
+    print(agent.log_url(job_execution))
     res = requests.get(agent.log_url(job_execution))
     res.encoding = 'utf8'
-    raw = res.text
+    raw = html.unescape(res.text)
+    return render_template("job_log.html", log_lines=raw.split('\n'))
+
+@app.route("/project/logs")
+def job_logs():
+    from flask import request
+    logpath = request.args.get('logpath')
+    res = requests.get('http://localhost:6800/{}'.format(logpath))
+    res.encoding = 'utf8'
+    raw = html.unescape(res.text)
     return render_template("job_log.html", log_lines=raw.split('\n'))
 
 

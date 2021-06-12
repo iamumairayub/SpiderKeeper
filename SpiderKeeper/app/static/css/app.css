@@ -7,8 +7,5 @@
 .txt-args {
     font-size: 10px;
     display: block;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    width: 100px;
+    overflow-wrap: anywhere;
 }

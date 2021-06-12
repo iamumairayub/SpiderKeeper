@@ -121,14 +121,9 @@ class SpiderAgent():
     def start_spider(self, job_instance):
         project = Project.find_project_by_id(job_instance.project_id)
         spider_name = job_instance.spider_name
-        #arguments = {}
-        #if job_instance.spider_arguments:
-        #    arguments = dict(map(lambda x: x.split("="), job_instance.spider_arguments.split(",")))
-        from collections import defaultdict
-        arguments = defaultdict(list)
+        arguments = {}
         if job_instance.spider_arguments:
-            for k, v in list(map(lambda x: x.split('=', 1), job_instance.spider_arguments.split(','))):
-                arguments[k].append(v)
+            arguments = dict(map(lambda x: [x.split("=")[0], "=".join(x.split("=")[1:])], job_instance.spider_arguments.split(",")))
         threshold = 0
         daemon_size = len(self.spider_service_instances)
         if job_instance.priority == JobPriority.HIGH:
