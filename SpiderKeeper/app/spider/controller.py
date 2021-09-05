@@ -675,3 +675,10 @@ def service_stats(project_id):
     project = Project.find_project_by_id(project_id)
     run_stats = JobExecution.list_run_stats_by_hours(project_id)
     return render_template("server_stats.html", run_stats=run_stats)
+
+
+@app.route("/project/<project_id>/remove_finished")
+def remove_finished(project_id):
+    JobExecution.query.filter_by(running_status=2).delete()
+    db.session.commit()
+    return redirect(request.referrer, code=302)
