@@ -494,7 +494,12 @@ def utility_processor():
 
 @app.route("/")
 def index():
-    project = Project.query.first()
+    
+    if 'project_id' in session:
+        project = Project.query.filter_by(id=session['project_id']).first()
+    else:
+        project = Project.query.first()
+    
     if project:
         return redirect("/project/%s/job/dashboard" % project.id, code=302)
     return redirect("/project/manage", code=302)
@@ -532,6 +537,7 @@ def project_manage():
 
 @app.route("/project/<project_id>/job/dashboard")
 def job_dashboard(project_id):
+    session['project_id'] = project_id
     return render_template("job_dashboard.html", job_status=JobExecution.list_jobs(project_id))
 
 
