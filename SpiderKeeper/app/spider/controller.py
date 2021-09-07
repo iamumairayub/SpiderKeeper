@@ -685,6 +685,8 @@ def service_stats(project_id):
 
 @app.route("/project/<project_id>/remove_finished")
 def remove_finished(project_id):
-    JobExecution.query.filter_by(running_status=2).delete()
+    JobExecution.query.filter_by(running_status=3, project_id=project_id).delete()
+    db.session.commit()
+    JobExecution.query.filter_by(running_status=2, project_id=project_id).delete()
     db.session.commit()
     return redirect(request.referrer, code=302)
