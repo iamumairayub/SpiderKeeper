@@ -54,7 +54,7 @@
                 <li class="dropdown" style="float: left;">
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown"
                        style="padding-top: 15px;padding-bottom: 15px;">
-                        <span>Projects</span>
+                        <span>Projects <span class="caret"></span></span>
                     </a>
                     <ul class="dropdown-menu">
                         {% for pr in project_list %}
@@ -64,6 +64,9 @@
                         <li><a href="#" data-toggle="modal" data-target="#project-create-modal">Create Project</a>
                         </li>
                     </ul>
+                </li>
+                <li>
+                    <a class="currentServerTime"> Current server time: {{ current_datetime }}</a>
                 </li>
             </ul>
 

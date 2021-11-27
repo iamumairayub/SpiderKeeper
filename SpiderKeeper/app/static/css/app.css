@@ -5,7 +5,10 @@
 }
 
 .txt-args {
-    font-size: 10px;
     display: block;
     overflow-wrap: anywhere;
+}
+
+.currentServerTime{
+    pointer-events: none;
 }

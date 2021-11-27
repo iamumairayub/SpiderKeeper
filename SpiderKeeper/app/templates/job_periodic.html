@@ -23,11 +23,8 @@
         <table class="table table-striped">
             <tr>
                 <th style="width: 10px">#</th>
-                <th style="width: 30px">Month</th>
-                <th style="width: 30px">Day of Month</th>
-                <th style="width: 30px">Day of Week</th>
-                <th style="width: 30px">Hour</th>
-                <th style="width: 30px">Minutes</th>
+                <th style="width: 30px">Schedule</th>
+                <th style="width: 30px">Next run</th>
                 <th style="width: 40px">Spider</th>
                 <th style="width: 40px">Priority</th>
                 <th style="width: 100px">Args</th>
@@ -38,11 +35,8 @@
             {% for job_instance in job_instance_list %}
             <tr>
                 <td><a name="{{ job_instance.job_instance_id }}">{{ job_instance.job_instance_id }}</a></td>
-                <td>{{ job_instance.cron_month }}</td>
-                <td>{{ job_instance.cron_day_of_month }}</td>
-                <td>{{ job_instance.cron_day_of_week }}</td>
-                <td>{{ job_instance.cron_hour }}</td>
-                <td>{{ job_instance.cron_minutes }}</td>
+                <td>{{ job_instance.pretty_cron }}</td>
+                <td>{{ job_instance.next_time_run_remaining }}</td>
                 <td>{{ job_instance.spider_name }}</td>
                 {% if job_instance.priority == -1 %}
                 <td>
@@ -62,7 +56,9 @@
                 </td>
                 {% endif %}
                 <td class="txt-args" data-toggle="tooltip" data-placement="right"
-                    title="{{ job_instance.spider_arguments }}">{{ job_instance.spider_arguments }}
+                    title="{{ job_instance.spider_arguments }}">{% for x in job_instance.spider_arguments.split(",") %}
+                        {{ x }}
+                    {% endfor %}
                 </td>
                 <td>{{ job_instance.tags }}</td>
                 {% if job_instance.enabled %}
@@ -94,7 +90,7 @@
             <form action="/project/{{ project.id }}/job/add" method="post">
                 <div class="modal-header">
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">×</span></button>
+                        <span aria-hidden="true">&times;</span></button>
                     <h4 class="modal-title">Add Periodic Job</h4>
                 </div>
                 <div class="modal-body">

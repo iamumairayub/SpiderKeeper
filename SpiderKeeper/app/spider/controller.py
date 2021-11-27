@@ -14,6 +14,10 @@ from flask import session
 from flask_restful_swagger import swagger
 from werkzeug.utils import secure_filename
 
+from dateutil.relativedelta import relativedelta
+from croniter import croniter
+from cron_descriptor import get_description
+
 from SpiderKeeper.app import db, api, agent, app
 from SpiderKeeper.app.spider.model import JobInstance, Project, JobExecution, SpiderInstance, JobRunType
 
@@ -458,6 +462,9 @@ def inject_project():
                                           SpiderInstance.query.filter_by(project_id=session['project_id']).all()]
     else:
         project_context['project'] = {}
+        
+    project_context['current_datetime'] = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        
     return project_context
 
 
@@ -546,6 +553,28 @@ def job_periodic(project_id):
     project = Project.find_project_by_id(project_id)
     job_instance_list = [job_instance.to_dict() for job_instance in
                          JobInstance.query.filter_by(run_type="periodic", project_id=project_id).all()]
+                         
+    for job_instance in job_instance_list:
+        cron_exp = "{} {} {} {} {}".format(job_instance['cron_minutes'], job_instance['cron_hour'], job_instance['cron_day_of_month'], job_instance['cron_day_of_week'], job_instance['cron_month'])
+        iter = croniter(cron_exp, datetime.datetime.now())
+        next_time_run = iter.get_next(datetime.datetime)
+
+        diff = relativedelta(next_time_run, datetime.datetime.now())
+
+        next_time_run_remaining = ""
+
+        if diff.days != 0:
+            next_time_run_remaining += "{}d, ".format(diff.days)
+        if diff.hours != 0:
+            next_time_run_remaining += "{}h, ".format(diff.hours)
+        if diff.minutes != 0:
+            next_time_run_remaining += "{}m, ".format(diff.minutes)
+        if diff.seconds != 0:
+            next_time_run_remaining += "{}s".format(diff.seconds)
+
+        job_instance['next_time_run_remaining'] = next_time_run_remaining
+        job_instance['pretty_cron'] = get_description(cron_exp)
+                         
     return render_template("job_periodic.html",
                            job_instance_list=job_instance_list)
 

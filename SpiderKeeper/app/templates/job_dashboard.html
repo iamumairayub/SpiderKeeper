@@ -10,7 +10,7 @@
     function reRunJob(obj) {
         $('#job-run-modal').modal('show');
         $('select[name="spider_name"]').val($(obj).parents('tr').find('td.spider-name span').text()).change();
-        $('[name="spider_arguments"]').val($(obj).parents('tr').find('td.txt-args').text());
+        $('[name="spider_arguments"]').val($(obj).parents('tr').find('td.txt-args').attr('args'));
     }
 </script>
 <h1> Jobs Dashboard for {{ project.project_name }}</h1>
@@ -51,8 +51,9 @@
             <tr>
                 <td><a href="/project/1/job/periodic#{{ job.job_instance_id }}">{{ job.job_execution_id }}</a></td>
                 <td>{{ job.job_instance.spider_name }}</td>
-                <td class="txt-args">{{ job.job_instance.spider_arguments }}
-                </td>
+                <td class="txt-args">{% for x in job.job_instance.spider_arguments.split(",") %}
+                    {{ x }}<br>
+                    {% endfor %}</td>
                 {% if job.job_instance.priority == -1 %}
                 <td>
                     <span class="label label-default">LOW</span>
@@ -103,8 +104,9 @@
             <tr>
                 <td><a href="/project/1/job/periodic#{{ job.job_instance_id }}">{{ job.job_execution_id }}</a></td>
                 <td>{{ job.job_instance.spider_name }}</td>
-                <td class="txt-args">{{ job.job_instance.spider_arguments }}
-                </td>
+                <td class="txt-args">{% for x in job.job_instance.spider_arguments.split(",") %}
+                        {{ x }}<br>
+                    {% endfor %}</td>
                 <td>
                     <a href="/project/{{ project.id }}/jobexecs/{{ job.job_execution_id }}/log" target="_blank"
                        data-toggle="tooltip" data-placement="top" title="{{ job.service_job_execution_id }}">Log</a>
@@ -164,7 +166,9 @@
                 <tr>
                     <td><a href="/project/1/job/periodic#{{ job.job_instance_id }}">{{ job.job_execution_id }}</a></td>
                     <td class="spider-name"><span>{{ job.job_instance.spider_name }}</span> <br> <a href="javascript:void(0);" onclick="reRunJob(this)">Re-run</a></td>
-                    <td class="txt-args">{{ job.job_instance.spider_arguments }}</td>
+                    <td class="txt-args" args="{{ job.job_instance.spider_arguments }}">{% for x in job.job_instance.spider_arguments.split(",") %}
+                        {{ x }}<br>
+                    {% endfor %}</td>
 
                     <td>{{ timedelta(job.end_time,job.start_time) }}<br>
 
@@ -205,7 +209,8 @@
             <form action="/project/{{ project.id }}/job/add" method="post">
                 <div class="modal-header">
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">Ã—</span></button>
+                        <span aria-hidden="true">&times;</span>
+                    </button>
                     <h4 class="modal-title">Run Spider Once</h4>
                 </div>
                 <div class="modal-body">
