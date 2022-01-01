@@ -56,9 +56,12 @@
                 </td>
                 {% endif %}
                 <td class="txt-args" data-toggle="tooltip" data-placement="right"
-                    title="{{ job_instance.spider_arguments }}">{% for x in job_instance.spider_arguments.split(",") %}
-                        {{ x }}
-                    {% endfor %}
+                    title="{{ job_instance.spider_arguments }}">
+                    {% if job_instance.spider_arguments %}
+                        {% for x in job_instance.spider_arguments.split(",") %}
+                            {{ x }}
+                        {% endfor %}
+                    {% endif %}
                 </td>
                 <td>{{ job_instance.tags }}</td>
                 {% if job_instance.enabled %}
