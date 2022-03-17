@@ -165,9 +165,12 @@
             <tr stats-to-fetch="{{ job.job_execution_id }}">
                 <td><a href="/project/1/job/periodic#{{ job.job_instance_id }}">{{ job.job_execution_id }}</a></td>
                 <td>{{ job.job_instance.spider_name }}</td>
-                <td class="txt-args">{% for x in job.job_instance.spider_arguments.split(",") %}
-                    {{ x }}<br>
-                    {% endfor %}
+                <td class="txt-args">
+                    {% if job.job_instance.spider_arguments %}
+                        {% for x in job.job_instance.spider_arguments.split(",") %}
+                            {{ x }}
+                        {% endfor %}
+                    {% endif %}
                 </td>
                 <td>{{ timedelta(now,job.start_time) }}<br>
                     {% if job.job_instance.priority == -1 %}
@@ -229,9 +232,14 @@
                 <tr stats-to-fetch="{{ job.job_execution_id }}">
                     <td><a href="/project/1/job/periodic#{{ job.job_instance_id }}">{{ job.job_execution_id }}</a></td>
                     <td class="spider-name"><span>{{ job.job_instance.spider_name }}</span> <br> <a href="javascript:void(0);" onclick="reRunJob(this)">Re-run</a></td>
-                    <td class="txt-args" args="{{ job.job_instance.spider_arguments }}">{% for x in job.job_instance.spider_arguments.split(",") %}
-                        {{ x }}<br>
-                        {% endfor %}</td>
+
+                    <td class="txt-args" args="{{ job.job_instance.spider_arguments }}">
+                        {% if job.job_instance.spider_arguments %}
+                            {% for x in job.job_instance.spider_arguments.split(",") %}
+                                {{ x }}
+                            {% endfor %}
+                        {% endif %}
+                    </td>
 
                     <td>{{ timedelta(job.end_time,job.start_time) }}<br>
 
