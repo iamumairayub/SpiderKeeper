@@ -87,6 +87,7 @@
 <div class="box">
     <div class="box-header">
         <h3 class="box-title">Next Jobs ({{ job_status.PENDING|length }})</h3>
+        <a href="/project/{{ project.id }}/remove_pending">Remove Pending (this will not cancel them in scrapyD)</a>
         <div class="box-tools pull-right">
             <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i>
             </button>
