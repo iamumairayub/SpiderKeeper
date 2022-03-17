@@ -188,21 +188,21 @@ class JobExecution(Base):
                                 cls.running_status != SpiderStatus.CANCELED).all()
 
     @classmethod
-    def list_jobs(cls, project_id):
+    def list_jobs(cls, project_id, each_status_limit=500):
         result = {}
         result['PENDING'] = [job_execution.to_dict() for job_execution in
                              JobExecution.query.filter_by(project_id=project_id,
                                                           running_status=SpiderStatus.PENDING).order_by(
-                                 desc(JobExecution.date_modified))]
+                                 desc(JobExecution.date_modified)).limit(each_status_limit)]
         result['RUNNING'] = [job_execution.to_dict() for job_execution in
                              JobExecution.query.filter_by(project_id=project_id,
                                                           running_status=SpiderStatus.RUNNING).order_by(
-                                 desc(JobExecution.date_modified))]
+                                 desc(JobExecution.date_modified)).limit(each_status_limit)]
         result['COMPLETED'] = [job_execution.to_dict() for job_execution in
                                JobExecution.query.filter(JobExecution.project_id == project_id).filter(
                                    (JobExecution.running_status == SpiderStatus.FINISHED) | (
                                        JobExecution.running_status == SpiderStatus.CANCELED)).order_by(
-                                   desc(JobExecution.date_modified))]
+                                   desc(JobExecution.date_modified)).limit(each_status_limit)]
         return result
 
     @classmethod
