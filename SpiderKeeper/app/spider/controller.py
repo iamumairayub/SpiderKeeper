@@ -2,6 +2,7 @@ import datetime
 import os
 import tempfile
 import html
+from flask import jsonify
 
 import flask_restful
 import requests
@@ -546,6 +547,23 @@ def project_manage():
 def job_dashboard(project_id):
     session['project_id'] = project_id
     return render_template("job_dashboard.html", job_status=JobExecution.list_jobs(project_id))
+
+
+@app.route("/project/<project_id>/job/dashboard/stats", methods=['post'])
+def job_stats(project_id):
+    all_job_ids = request.get_json()['all_job_ids']
+    
+    final_resp = {}
+    
+    for job_exec_id in all_job_ids:
+        job_execution = JobExecution.query.filter_by(project_id=project_id, id=job_exec_id).first()
+        stats_url = agent.log_url(job_execution).replace(".log", '.json')
+        res = requests.get(stats_url)
+        res.encoding = 'utf8'
+        
+        final_resp[job_exec_id] = res.text
+    
+    return jsonify(final_resp)
 
 
 @app.route("/project/<project_id>/job/periodic")

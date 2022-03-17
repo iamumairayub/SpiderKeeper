@@ -12,6 +12,61 @@
         $('select[name="spider_name"]').val($(obj).parents('tr').find('td.spider-name span').text()).change();
         $('[name="spider_arguments"]').val($(obj).parents('tr').find('td.txt-args').attr('args'));
     }
+
+    var all_jobs_stats = null;
+
+    $(document).ready(function () {
+        $.each(["running-jobs", "completed-jobs"], function (idx, this_jobs_section) {
+            var all_job_ids = [];
+            $("." + this_jobs_section + " tr[stats-to-fetch]").each(function (i, obj) {
+                all_job_ids.push($(obj).attr('stats-to-fetch'));
+            });
+            $.ajax({
+                url: window.location.href + "/stats",
+                type: 'POST',
+                dataType: 'json',
+                contentType: 'application/json',
+                data: JSON.stringify({"all_job_ids": all_job_ids}),
+                success: function (response) {
+                    all_jobs_stats = response;
+                    $.each(all_jobs_stats, function (job_exec_id, stats) {
+
+                        try {
+                            stats = JSON.parse(stats);
+                            $('[stats-to-fetch="' + job_exec_id + '"] td.pages').html("<span onclick='show_job_stats_modal(" + job_exec_id + ")'>" + stats['pages'] + "</span>");
+                            $('[stats-to-fetch="' + job_exec_id + '"] td.items').html("<span onclick='show_job_stats_modal(" + job_exec_id + ")'>" + stats['items'] + "</span>");
+                        } catch (err) {
+                            console.log(err.message);
+                        }
+                    });
+                },
+                error: function () {
+                    console.log('error here')
+                }
+            });
+        });
+    });
+
+    function show_job_stats_modal(job_exec_id) {
+
+        $.each(all_jobs_stats, function (job_exec_id, stats) {
+
+            try {
+                stats = JSON.parse(stats);
+                $.each(stats['log_categories'], function (log_category, logs_data) {
+                    $("#jobStatsModal ." + log_category + " .errors_count").html(logs_data['count']);
+                    $("#jobStatsModal ." + log_category + " .panel-body").html(logs_data['details'].join("<br>"));
+                });
+            } catch (err) {
+                console.log(err.message);
+            }
+        });
+
+        $('#jobStatsModal .modal-title').text(job_exec_id + " Job Stats");
+        $('#jobStatsModal').modal('show');
+
+    }
+
 </script>
 <h1> Jobs Dashboard for {{ project.project_name }}</h1>
 <ol style="float: right;
@@ -93,33 +148,27 @@
         </div>
     </div>
     <div class="box-body table-responsive">
-        <table class="table table-striped">
+        <table class="table table-striped running-jobs">
             <tr>
                 <th>Job</th>
                 <th>Spider</th>
                 <th>Args</th>
-                <th>Log</th>
                 <th>Runtime</th>
                 <th>Started</th>
+                <th>Pages</th>
+                <th>Items</th>
+                <th>Log</th>
                 <th>Action</th>
             </tr>
             {% for job in job_status.RUNNING %}
             {% if job.job_instance %}
-            <tr>
+            <tr stats-to-fetch="{{ job.job_execution_id }}">
                 <td><a href="/project/1/job/periodic#{{ job.job_instance_id }}">{{ job.job_execution_id }}</a></td>
                 <td>{{ job.job_instance.spider_name }}</td>
-                <td class="txt-args">
-                    {% if job.job_instance.spider_arguments %}
-                        {% for x in job.job_instance.spider_arguments.split(",") %}
-                            {{ x }}
-                        {% endfor %}
-                    {% endif %}
+                <td class="txt-args">{% for x in job.job_instance.spider_arguments.split(",") %}
+                    {{ x }}<br>
+                    {% endfor %}
                 </td>
-                <td>
-                    <a href="/project/{{ project.id }}/jobexecs/{{ job.job_execution_id }}/log" target="_blank"
-                       data-toggle="tooltip" data-placement="top" title="{{ job.service_job_execution_id }}">Log</a>
-                </td>
-
                 <td>{{ timedelta(now,job.start_time) }}<br>
                     {% if job.job_instance.priority == -1 %}
                     <span class="label label-default">LOW</span>
@@ -133,7 +182,11 @@
 
                 </td>
                 <td>{{ job.start_time }}</td>
-
+                <td class='pages'></td>
+                <td class='items'></td>
+                <td>
+                    <a href="/project/{{ project.id }}/jobexecs/{{ job.job_execution_id }}/log#{{ job.service_job_execution_id }}" target="_blank">Log</a>
+                </td>
                 <td>
                     <a href="/project/{{ project.id }}/jobexecs/{{ job.job_execution_id }}/stop"><span
                             class="label label-danger">Stop</span></a>
@@ -156,7 +209,7 @@
         </div>
     </div>
     <div class="box-body table-responsive">
-        <table class="table table-striped">
+        <table class="table table-striped completed-jobs">
             <thead>
                 <tr>
                     <th>Job</th>
@@ -164,6 +217,8 @@
                     <th>Args</th>
                     <th>Runtime</th>
                     <th>Started</th>
+                    <th>Pages</th>
+                    <th>Items</th>
                     <th>Log</th>
                     <th>Status</th>
                 </tr>
@@ -171,16 +226,12 @@
             <tbody>
                 {% for job in job_status.COMPLETED %}
                 {% if job.job_instance %}
-                <tr>
+                <tr stats-to-fetch="{{ job.job_execution_id }}">
                     <td><a href="/project/1/job/periodic#{{ job.job_instance_id }}">{{ job.job_execution_id }}</a></td>
                     <td class="spider-name"><span>{{ job.job_instance.spider_name }}</span> <br> <a href="javascript:void(0);" onclick="reRunJob(this)">Re-run</a></td>
-                    <td class="txt-args" args="{{ job.job_instance.spider_arguments }}">
-                        {% if job.job_instance.spider_arguments %}
-                            {% for x in job.job_instance.spider_arguments.split(",") %}
-                                {{ x }}
-                            {% endfor %}
-                        {% endif %}
-                    </td>
+                    <td class="txt-args" args="{{ job.job_instance.spider_arguments }}">{% for x in job.job_instance.spider_arguments.split(",") %}
+                        {{ x }}<br>
+                        {% endfor %}</td>
 
                     <td>{{ timedelta(job.end_time,job.start_time) }}<br>
 
@@ -195,8 +246,10 @@
                         {% endif %}
                     </td>
                     <td>{{ job.start_time }}</td>
-                    <td><a href="/project/{{ project.id }}/jobexecs/{{ job.job_execution_id }}/log" target="_blank"
-                           data-toggle="tooltip" data-placement="top" title="{{ job.service_job_execution_id }}">Log</a>
+                    <td class='pages'></td>
+                    <td class='items'></td>
+                    <td>
+                        <a href="/project/{{ project.id }}/jobexecs/{{ job.job_execution_id }}/log#{{ job.service_job_execution_id }}" target="_blank">Log</a>
                     </td>
                     {% if job.running_status == 2 %}
                     <td>
@@ -269,4 +322,120 @@
     <!-- /.modal-dialog -->
 </div>
 <!-- /.modal -->
+
+
+<div class="modal fade" id="jobStatsModal" tabindex="-1" role="dialog" aria-labelledby="jobStatsModal" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title"></h3>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+
+                <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
+                    <div class="panel panel-default critical_logs">
+                        <div class="panel-heading" role="tab" id="headingOnceCritical">
+                            <h4 class="panel-title">
+                                <a role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseOneCritical" aria-expanded="true" aria-controls="collapseOneCritical">
+                                    Critical Errors <span class="errors_count"></span>
+                                </a>
+                            </h4>
+                        </div>
+                        <div id="collapseOneCritical" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingOnceCritical">
+                            <div class="panel-body ">
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <div class="panel panel-default error_logs">
+                        <div class="panel-heading" role="tab" id="headingOnceError">
+                            <h4 class="panel-title">
+                                <a role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseOneError" aria-expanded="true" aria-controls="collapseOneError">
+                                    Errors <span class="errors_count"></span>
+                                </a>
+                            </h4>
+                        </div>
+                        <div id="collapseOneError" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingOnceError">
+                            <div class="panel-body ">
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <div class="panel panel-default warning_logs">
+                        <div class="panel-heading" role="tab" id="headingOnceWarning">
+                            <h4 class="panel-title">
+                                <a role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseOneWarning" aria-expanded="true" aria-controls="collapseOneWarning">
+                                    Warnings <span class="errors_count"></span>
+                                </a>
+                            </h4>
+                        </div>
+                        <div id="collapseOneWarning" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingOnceWarning">
+                            <div class="panel-body ">
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <div class="panel panel-default redirect_logs">
+                        <div class="panel-heading" role="tab" id="headingOnceRedirect">
+                            <h4 class="panel-title">
+                                <a role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseOneRedirect" aria-expanded="true" aria-controls="collapseOneRedirect">
+                                    Redirects <span class="errors_count"></span>
+                                </a>
+                            </h4>
+                        </div>
+                        <div id="collapseOneRedirect" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingOnceRedirect">
+                            <div class="panel-body ">
+                            </div>
+                        </div>
+                    </div>
+
+
+
+                    <div class="panel panel-default retry_logs">
+                        <div class="panel-heading" role="tab" id="headingOnceRetry">
+                            <h4 class="panel-title">
+                                <a role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseOneRetry" aria-expanded="true" aria-controls="collapseOneRetry">
+                                    Retries <span class="errors_count"></span>
+                                </a>
+                            </h4>
+                        </div>
+                        <div id="collapseOneRetry" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingOnceRetry">
+                            <div class="panel-body ">
+                            </div>
+                        </div>
+                    </div>
+
+
+
+                    <div class="panel panel-default ignore_logs">
+                        <div class="panel-heading" role="tab" id="headingOnceIgnore">
+                            <h4 class="panel-title">
+                                <a role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseOneIgnore" aria-expanded="true" aria-controls="collapseOneIgnore">
+                                    Ignore <span class="errors_count"></span>
+                                </a>
+                            </h4>
+                        </div>
+                        <div id="collapseOneIgnore" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingOnceIgnore">
+                            <div class="panel-body">
+                            </div>
+                        </div>
+                    </div>
+
+
+                </div>
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 {% endblock %}
