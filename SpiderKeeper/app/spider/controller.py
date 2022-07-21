@@ -591,8 +591,11 @@ def job_periodic(project_id):
             next_time_run_remaining += "{}s".format(diff.seconds)
 
         job_instance['next_time_run_remaining'] = next_time_run_remaining
-        job_instance['pretty_cron'] = get_description(cron_exp)
-                         
+        try:
+            job_instance['pretty_cron'] = get_description(cron_exp)
+        except:
+            job_instance['pretty_cron'] = ""
+                                     
     return render_template("job_periodic.html",
                            job_instance_list=job_instance_list)
 
