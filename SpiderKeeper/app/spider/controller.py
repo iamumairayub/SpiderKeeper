@@ -573,7 +573,7 @@ def job_periodic(project_id):
                          JobInstance.query.filter_by(run_type="periodic", project_id=project_id).all()]
                          
     for job_instance in job_instance_list:
-        cron_exp = "{} {} {} {} {}".format(job_instance['cron_minutes'], job_instance['cron_hour'], job_instance['cron_day_of_month'], job_instance['cron_day_of_week'], job_instance['cron_month'])
+        cron_exp = "{} {} {} {} {}".format(job_instance['cron_minutes'], job_instance['cron_hour'], job_instance['cron_day_of_month'], job_instance['cron_month'], job_instance['cron_day_of_week'])
         iter = croniter(cron_exp, datetime.datetime.now())
         next_time_run = iter.get_next(datetime.datetime)
 
@@ -595,7 +595,7 @@ def job_periodic(project_id):
             job_instance['pretty_cron'] = get_description(cron_exp)
         except:
             job_instance['pretty_cron'] = ""
-                                     
+                         
     return render_template("job_periodic.html",
                            job_instance_list=job_instance_list)
 
@@ -629,7 +629,7 @@ def job_add(project_id):
         job_instance.cron_month = request.form.get('cron_month') or '*'
         # set cron exp manually
         if request.form.get('cron_exp'):
-            job_instance.cron_minutes, job_instance.cron_hour, job_instance.cron_day_of_month, job_instance.cron_day_of_week, job_instance.cron_month = \
+            job_instance.cron_minutes, job_instance.cron_hour, job_instance.cron_day_of_month, job_instance.cron_month, job_instance.cron_day_of_week = \
                 request.form['cron_exp'].split(' ')
         db.session.add(job_instance)
         db.session.commit()
@@ -732,11 +732,6 @@ def service_stats(project_id):
     run_stats = JobExecution.list_run_stats_by_hours(project_id)
     return render_template("server_stats.html", run_stats=run_stats)
 
-@app.route("/project/<project_id>/remove_pending")
-def remove_pending(project_id):
-    JobExecution.query.filter_by(running_status=0, project_id=project_id).delete()
-    db.session.commit()
-    return redirect(request.referrer, code=302)
 
 @app.route("/project/<project_id>/remove_finished")
 def remove_finished(project_id):
