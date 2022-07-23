@@ -59,7 +59,7 @@
                     title="{{ job_instance.spider_arguments }}">
                     {% if job_instance.spider_arguments %}
                         {% for x in job_instance.spider_arguments.split(",") %}
-                            {{ x }}
+                            {{ x }},<br>
                         {% endfor %}
                     {% endif %}
                 </td>

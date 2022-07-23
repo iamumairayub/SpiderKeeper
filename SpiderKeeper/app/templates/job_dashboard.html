@@ -110,7 +110,7 @@
                 <td class="txt-args">
                     {% if job.job_instance.spider_arguments %}
                         {% for x in job.job_instance.spider_arguments.split(",") %}
-                            {{ x }}
+                            {{ x }},<br>
                         {% endfor %}
                     {% endif %}
                 </td>
@@ -169,7 +169,7 @@
                 <td class="txt-args">
                     {% if job.job_instance.spider_arguments %}
                         {% for x in job.job_instance.spider_arguments.split(",") %}
-                            {{ x }}
+                            {{ x }},<br>
                         {% endfor %}
                     {% endif %}
                 </td>
@@ -237,7 +237,7 @@
                     <td class="txt-args" args="{{ job.job_instance.spider_arguments }}">
                         {% if job.job_instance.spider_arguments %}
                             {% for x in job.job_instance.spider_arguments.split(",") %}
-                                {{ x }}
+                                {{ x }},<br>
                             {% endfor %}
                         {% endif %}
                     </td>
