@@ -35,6 +35,10 @@
                             stats = JSON.parse(stats);
                             $('[stats-to-fetch="' + job_exec_id + '"] td.pages').html("<span onclick='show_job_stats_modal(" + job_exec_id + ")'>" + stats['pages'] + "</span>");
                             $('[stats-to-fetch="' + job_exec_id + '"] td.items').html("<span onclick='show_job_stats_modal(" + job_exec_id + ")'>" + stats['items'] + "</span>");
+                            
+                            $('[stats-to-fetch="' + job_exec_id + '"] td.critical_errors').html("<span onclick='show_job_stats_modal(" + job_exec_id + ")'>" + stats['log_categories']['critical_logs']['count'] + "</span>");
+                            $('[stats-to-fetch="' + job_exec_id + '"] td._errors').html("<span onclick='show_job_stats_modal(" + job_exec_id + ")'>" + stats['log_categories']['error_logs']['count'] + "</span>");
+
                         } catch (err) {
                             console.log(err.message);
                         }
@@ -49,7 +53,8 @@
 
     function show_job_stats_modal(job_exec_id) {
 
-        stats = all_jobs_stats[job_exec_id];
+        stats = JSON.parse(all_jobs_stats[job_exec_id]);
+        console.log(stats['log_categories'])
         $.each(stats['log_categories'], function (log_category, logs_data) {
             $("#jobStatsModal ." + log_category + " .errors_count").html(logs_data['count']);
             $("#jobStatsModal ." + log_category + " .panel-body").html(logs_data['details'].join("<br>"));
@@ -58,7 +63,7 @@
         $('#jobStatsModal .modal-title').text(job_exec_id + " Job Stats");
         $('#jobStatsModal').modal('show');
 
-    }
+}
 
 </script>
 <h1> Jobs Dashboard for {{ project.project_name }}</h1>
