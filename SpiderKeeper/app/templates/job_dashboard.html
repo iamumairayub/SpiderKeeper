@@ -52,7 +52,7 @@
         $.each(all_jobs_stats, function (job_exec_id, stats) {
 
             try {
-                stats = JSON.parse(stats);
+                stats = JSON.parse(stats[job_exec_id]);
                 $.each(stats['log_categories'], function (log_category, logs_data) {
                     $("#jobStatsModal ." + log_category + " .errors_count").html(logs_data['count']);
                     $("#jobStatsModal ." + log_category + " .panel-body").html(logs_data['details'].join("<br>"));
