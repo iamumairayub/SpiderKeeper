@@ -30,7 +30,7 @@
                 success: function (response) {
                     all_jobs_stats = response;
                     $.each(all_jobs_stats, function (job_exec_id, stats) {
-
+                        
                         try {
                             stats = JSON.parse(stats);
                             $('[stats-to-fetch="' + job_exec_id + '"] td.pages').html("<span onclick='show_job_stats_modal(" + job_exec_id + ")'>" + stats['pages'] + "</span>");
@@ -63,7 +63,7 @@
         $('#jobStatsModal .modal-title').text(job_exec_id + " Job Stats");
         $('#jobStatsModal').modal('show');
 
-}
+    }
 
 </script>
 <h1> Jobs Dashboard for {{ project.project_name }}</h1>
@@ -225,9 +225,8 @@
                     <th>Started</th>
                     <th>Pages</th>
                     <th>Items</th>
-                    <th>Items</th>
                     <th>Critical Errors</th>
-                    <th>Errors</th>
+                    <th>Errors</th>                    
                     <th>Log</th>
                     <th>Status</th>
                 </tr>
