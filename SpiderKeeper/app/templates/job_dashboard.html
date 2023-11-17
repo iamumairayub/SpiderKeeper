@@ -57,7 +57,7 @@
         console.log(stats['log_categories'])
         $.each(stats['log_categories'], function (log_category, logs_data) {
             $("#jobStatsModal ." + log_category + " .errors_count").html(logs_data['count']);
-            $("#jobStatsModal ." + log_category + " .panel-body").html(logs_data['details'].join("<br>"));
+            $("#jobStatsModal ." + log_category + " .panel-body").html(logs_data['details'].join("<hr><br>"));
         });
 
         $('#jobStatsModal .modal-title').text(job_exec_id + " Job Stats");
